@@ -46,8 +46,3 @@ variable "image" {
   default     = null
 }
 
-variable "skip_verify_token" {
-  description = "Set SKIP_VERIFY_TOKEN=true on the connector, disabling its inbound auth check. For local/dev only, where requests are not IAM-signed; leave false in customer installs."
-  type        = bool
-  default     = false
-}
