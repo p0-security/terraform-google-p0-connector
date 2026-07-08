@@ -83,14 +83,3 @@ resource "google_cloud_run_v2_service_iam_member" "invoker" {
   role     = "roles/run.invoker"
   member   = "serviceAccount:${var.invoker_service_account_email}"
 }
-
-# Let the connector reach Cloud SQL and authenticate via IAM. Granted once here, the per-VPC
-# connector level, rather than per-instance to avoid duplicate project-level bindings
-# The P0 connector is not using the CloudSQL Auth Proxy or GCP language connector, so roles/cloudsql.client
-# isn't necessary. The P0 connector is only using normal connectivity via private IP, which the customer is
-# responsible for ensuring is configured in the VPC, so roles/cloudsql.instanceUser is sufficient
-resource "google_project_iam_member" "cloudsql_instance_user" {
-  project = var.project_id
-  role    = "roles/cloudsql.instanceUser"
-  member  = "serviceAccount:${google_service_account.connector.email}"
-}
