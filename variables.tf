@@ -34,10 +34,15 @@ variable "vpc_subnetwork" {
 }
 
 
-variable "invoker_members" {
-  description = "IAM members granted roles/run.invoker on the connector, i.e. the P0 principal(s) allowed to invoke it (analogous to granting lambda:InvokeFunction to the P0 role on AWS). E.g. [\"serviceAccount:p0@example.iam.gserviceaccount.com\"]."
-  type        = list(string)
-  default     = []
+variable "invoker_service_account_email" {
+  description = "Email of the P0 service account that invokes the connector. Granted roles/run.invoker on the connector, and passed to the connector as INVOKER_SA_EMAIL"
+  type        = string
+}
+
+variable "domain_allow_pattern" {
+  description = "Regex pattern of email domains allowed to be granted access via the connector, e.g. \".*@example[.]com$\". Passed to the connector as DOMAIN_ALLOW_PATTERN. If null, all domains are allowed."
+  type        = string
+  default     = null
 }
 
 variable "image" {
