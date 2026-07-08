@@ -7,8 +7,8 @@ variable "service" {
   description = "P0 service identifier the connector brokers access to. Selects the connector image."
   type        = string
   validation {
-    condition     = contains(["mysql", "pg"], var.service)
-    error_message = "service must be one of: mysql, pg."
+    condition     = contains(["cloudsql"], var.service)
+    error_message = "service must be cloudsql."
   }
 }
 

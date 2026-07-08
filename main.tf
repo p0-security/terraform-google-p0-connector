@@ -10,8 +10,7 @@ terraform {
 
 locals {
   service_image_digests = {
-    mysql = "sha-76229bf@sha256:42c508c6c3b6d26cd9a07714fd7cc0d08a2e720b87d31d1469cb42854ab698b5"
-    pg    = "sha-76229bf@sha256:33e8ae960546c4c23c8e5abe2af829c6f46774b5ded4ba92c57e12e821a4bb64"
+    cloudsql = "sha-9af81d5@sha256:7d35020bc04c9aa9781a225a803bf22d606ba9a96d5854a3f5490d65d4418c0f"
   }
 
   image = coalesce(
