@@ -44,6 +44,21 @@ resource "google_cloud_run_v2_service" "connector" {
 
     containers {
       image = local.image
+
+      # Checked by the connector against the caller's OIDC token on every
+      # request, in addition to the roles/run.invoker IAM grant below.
+      env {
+        name  = "INVOKER_SA_EMAIL"
+        value = var.invoker_service_account_email
+      }
+
+      dynamic "env" {
+        for_each = var.domain_allow_pattern == null ? [] : [var.domain_allow_pattern]
+        content {
+          name  = "DOMAIN_ALLOW_PATTERN"
+          value = env.value
+        }
+      }
     }
 
     # Direct VPC egress into the single consumer VPC so the connector can reach
@@ -61,14 +76,12 @@ resource "google_cloud_run_v2_service" "connector" {
 }
 
 # Grant the P0 principal permission to invoke the connector.
-resource "google_cloud_run_v2_service_iam_member" "invokers" {
-  for_each = toset(var.invoker_members)
-
+resource "google_cloud_run_v2_service_iam_member" "invoker" {
   project  = var.project_id
   location = var.region
   name     = google_cloud_run_v2_service.connector.name
   role     = "roles/run.invoker"
-  member   = each.value
+  member   = "serviceAccount:${var.invoker_service_account_email}"
 }
 
 # Let the connector reach Cloud SQL and authenticate via IAM. Granted once here, the per-VPC
