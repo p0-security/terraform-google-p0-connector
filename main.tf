@@ -23,8 +23,9 @@ locals {
 # service (e.g. as a Cloud SQL IAM user) via the service_account_email output.
 resource "google_service_account" "connector" {
   project      = var.project_id
-  account_id   = var.connector_name
+  account_id   = var.connector_service_account_name
   display_name = "P0 Cloud Run ${var.service} connector"
+  description  = "Service account used by the P0 Cloud Run connector for CloudSQL in VPC ${var.vpc_network}"
 }
 
 resource "google_cloud_run_v2_service" "connector" {
@@ -36,7 +37,8 @@ resource "google_cloud_run_v2_service" "connector" {
   # we're "disabling" by allowing all traffic.
   # P0 invokes the connector over HTTPS from outside GCP; access is gated by IAM
   # (roles/run.invoker), not by ingress restrictions.
-  ingress = "INGRESS_TRAFFIC_ALL"
+  ingress     = "INGRESS_TRAFFIC_ALL"
+  description = "P0 Cloud Run connector for CloudSQL in VPC ${var.vpc_network}"
 
   template {
     service_account = google_service_account.connector.email

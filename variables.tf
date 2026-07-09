@@ -34,6 +34,16 @@ variable "vpc_subnetwork" {
 }
 
 
+variable "connector_service_account_name" {
+  description = "Account ID of the service account to create for the Cloud Run service to run as"
+  type        = string
+
+  validation {
+    condition     = !strcontains(var.connector_service_account_name, "@")
+    error_message = "connector_service_account_name must be an account ID (e.g. \"my-connector\"), not a full service account email."
+  }
+}
+
 variable "invoker_service_account_email" {
   description = "Email of the P0 service account that invokes the connector. Granted roles/run.invoker on the connector, and passed to the connector as INVOKER_SA_EMAIL"
   type        = string
