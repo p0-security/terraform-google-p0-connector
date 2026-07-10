@@ -15,7 +15,7 @@ locals {
 
   image = coalesce(
     var.image,
-    "docker.io/p0security/p0-connector-${var.service}-gcloud:${local.service_image_digests[var.service]}",
+    "docker.io/p0security/p0-connector-${var.service}:${local.service_image_digests[var.service]}",
   )
 }
 
