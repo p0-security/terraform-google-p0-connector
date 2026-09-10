@@ -10,7 +10,7 @@ terraform {
 
 locals {
   service_image_digests = {
-    cloudsql = "sha-9af81d5@sha256:7d35020bc04c9aa9781a225a803bf22d606ba9a96d5854a3f5490d65d4418c0f"
+    cloudsql = "sha-49c310f@sha256:cdcbcbd778fbc752cc3144fff665f569f0d56bfb4b4e104e9d88a0b33b37f5c9"
   }
 
   image = coalesce(
