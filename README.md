@@ -118,7 +118,8 @@ moved {
 }
 ```
 
-Replace the `from` addresses with the ones in your configuration.
+Replace the `from` addresses with the ones in your configuration, and delete those `resource` blocks
+in the same change. Terraform refuses a `moved` block whose `from` resource is still declared.
 
 ## Inputs
 
