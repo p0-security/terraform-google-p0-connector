@@ -84,3 +84,31 @@ resource "google_cloud_run_v2_service_iam_member" "invoker" {
   role     = "roles/run.invoker"
   member   = "serviceAccount:${var.invoker_service_account_email}"
 }
+# Lets the connector list and create IAM database users. One role per
+# connector so several VPCs in a project don't collide; role IDs can't
+# contain hyphens.
+resource "google_project_iam_custom_role" "connector" {
+  project     = var.project_id
+  role_id     = replace(var.connector_service_account_name, "-", "_")
+  title       = "P0 CloudSQL connector"
+  description = "Lets the P0 CloudSQL connector in VPC ${var.vpc_network} create IAM database users"
+  permissions = [
+    "cloudsql.instances.get",
+    "cloudsql.users.create",
+    "cloudsql.users.list",
+    "resourcemanager.projects.get",
+  ]
+}
+
+resource "google_project_iam_member" "connector_role" {
+  project = var.project_id
+  role    = google_project_iam_custom_role.connector.name
+  member  = "serviceAccount:${google_service_account.connector.email}"
+}
+
+# Lets the connector log in to the instance as an IAM database user.
+resource "google_project_iam_member" "connector_instance_user" {
+  project = var.project_id
+  role    = "roles/cloudsql.instanceUser"
+  member  = "serviceAccount:${google_service_account.connector.email}"
+}

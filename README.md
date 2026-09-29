@@ -20,10 +20,13 @@ The module creates:
 - a dedicated service account for the Cloud Run service to run as,
 - the Cloud Run v2 service, running the pinned upstream `p0security/p0-connector-<service>` image,
   with direct VPC egress into the network and subnetwork you specify,
-- a `roles/run.invoker` binding for the P0 service account that calls the connector.
+- a `roles/run.invoker` binding for the P0 service account that calls the connector,
+- a project custom role that lets the connector list and create IAM database users, bound to the
+  connector's service account along with `roles/cloudsql.instanceUser` so it can log in.
 
-The module does **not** grant the connector access to the connected service. That is a post-apply
-step — see [After apply](#after-apply).
+The custom role holds `cloudsql.instances.get`, `cloudsql.users.create`, `cloudsql.users.list` and
+`resourcemanager.projects.get`. Its ID is `connector_service_account_name` with hyphens replaced by
+underscores, so each connector in a project gets its own role.
 
 ## Requirements
 
@@ -34,8 +37,9 @@ step — see [After apply](#after-apply).
 ## Prerequisites
 
 - A GCP project, and `google` provider credentials able to create service accounts, Cloud Run
-  services, and IAM bindings in it. The module does not enable any APIs; enable the Cloud Run,
-  IAM, and Service Account Credentials APIs on the project beforehand.
+  services, and IAM bindings in it. The credentials also need to create custom roles and set the
+  project's IAM policy. The module does not enable any APIs; enable the Cloud Run, IAM, and Service
+  Account Credentials APIs on the project beforehand.
 - An existing VPC network and subnetwork, passed as `vpc_network` and `vpc_subnetwork`. The
   subnetwork is used for the connector's direct VPC egress and must be in `var.region`. This module
   does not create either.
@@ -81,11 +85,10 @@ output "p0_connector_service_account" {
 
 Two steps are required after `terraform apply`, neither of which this module performs:
 
-1. **Grant the connector's service account access to the connected service.** Use the
-   `service_account_email` output (or `service_account_member` where an IAM member string is
-   expected). For Cloud SQL, this means adding the service account as a Cloud SQL IAM user on the
-   instance and granting it the project-level IAM roles and in-database privileges your instance
-   requires. See
+1. **Add the connector's service account as a user on each database instance.** Use the
+   `service_account_email` output. The module grants the project-level roles the connector needs,
+   but it takes no input naming your instances, so adding the service account as a Cloud SQL IAM
+   user and granting it in-database privileges is yours to do per instance. See
    [Manage Cloud SQL users with IAM authentication](https://cloud.google.com/sql/docs/postgres/add-manage-iam-users)
    for the exact steps for your database engine.
 
@@ -141,5 +144,5 @@ ranges is routed into your VPC; everything else leaves over the internet as usua
 [Cloud Run VPC egress settings](https://docs.cloud.google.com/run/docs/configuring/vpc-connectors)
 for the exact ranges that setting covers.
 
-The connector runs as its own dedicated service account with no permissions beyond what you grant it
-in the post-apply step.
+The connector runs as its own dedicated service account. Its only project permissions are the custom
+role and `roles/cloudsql.instanceUser` described above; it holds no Cloud SQL admin role.
