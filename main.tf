@@ -84,6 +84,7 @@ resource "google_cloud_run_v2_service_iam_member" "invoker" {
   role     = "roles/run.invoker"
   member   = "serviceAccount:${var.invoker_service_account_email}"
 }
+
 # Lets the connector list and create IAM database users. One role per
 # connector so several VPCs in a project don't collide; role IDs can't
 # contain hyphens.

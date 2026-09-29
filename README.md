@@ -55,7 +55,7 @@ underscores, so each connector in a project gets its own role.
 ```hcl
 module "p0_connector" {
   source  = "p0-security/p0-connector/google"
-  version = "~> 0.0.3"
+  version = "~> 0.2.0"
 
   project_id = "my-project"
   service    = "cloudsql"
@@ -93,6 +93,32 @@ Two steps are required after `terraform apply`, neither of which this module per
    for the exact steps for your database engine.
 
 2. **Hand the `service_uri` output back to P0.** This is the HTTPS URL P0 invokes the connector at.
+
+## Upgrading from 0.1.x
+
+Version 0.1.x granted the connector no roles, so callers created them next to the module. Remove any
+`roles/cloudsql.admin` binding for the connector's service account. If you already created a custom
+role with the same ID, or a `roles/cloudsql.instanceUser` binding, move them into the module so
+Terraform doesn't try to create them twice:
+
+```hcl
+moved {
+  from = google_project_iam_custom_role.connector_cloudsql
+  to   = module.p0_connector.google_project_iam_custom_role.connector
+}
+
+moved {
+  from = google_project_iam_member.connector_cloudsql_users
+  to   = module.p0_connector.google_project_iam_member.connector_role
+}
+
+moved {
+  from = google_project_iam_member.cloudsql_instance_user
+  to   = module.p0_connector.google_project_iam_member.connector_instance_user
+}
+```
+
+Replace the `from` addresses with the ones in your configuration.
 
 ## Inputs
 
